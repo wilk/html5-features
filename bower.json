@@ -1,0 +1,22 @@
+{
+  "name": "html5-features",
+  "homepage": "https://github.com/wilk/html5-features",
+  "authors": [
+    "Wilk <wilk3ert@gmail.com>"
+  ],
+  "description": "html5 features testing repo",
+  "main": "index.html",
+  "moduleType": [],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "dexie": "^1.3.1"
+  }
+}

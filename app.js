@@ -1,6 +1,8 @@
 (function () {
     'use strict';
 
+    Notification.requestPermission();
+
     window.createDb = function () {
         var dbCreationId = Date.now(),
             booksCreationId, populateId;
@@ -26,7 +28,8 @@
                     method: 'POST',
                     url: '/databases/test/collections',
                     data: {
-                        name: 'books'
+                        name: 'books',
+                        fields: ['++id', 'title', 'author', 'isbn']
                     },
                     id: booksCreationId
                 }));

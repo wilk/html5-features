@@ -1,5 +1,7 @@
 'use strict';
 
+importScripts('bower_components/dexie/dist/dexie.js');
+
 var db, dbName, collectionName, store;
 
 console.log('WW :: Web Worker started');
@@ -18,59 +20,60 @@ onmessage = function (evt) {
     if (msg.method === 'POST' && msg.url === '/databases' && msg.data.name.length > 0) {
         console.log('WW :: POST /databases', msg.data.name);
         dbName = msg.data.name;
-        var request = indexedDB.open(msg.data.name, 5);
+        db = new Dexie(dbName);
+        postMessage(JSON.stringify({
+            id: msg.id,
+            data: {
+                msg: `database ${dbName} created!`
+            }
+        }));
 
-        request.onupgradeneeded = function() {
-            // The database did not previously exist, so create object stores and indexes.
-            db = request.result;
-            /*var store = db.createObjectStore("books", {keyPath: "isbn"});
-            var titleIndex = store.createIndex("by_title", "title", {unique: true});
-            var authorIndex = store.createIndex("by_author", "author");
-
-            // Populate with initial data.
-            store.put({title: "Quarry Memories", author: "Fred", isbn: 123456});
-            store.put({title: "Water Buffaloes", author: "Fred", isbn: 234567});
-            store.put({title: "Bedrock Nights", author: "Barney", isbn: 345678});*/
-        };
-
-        request.onsuccess = function() {
-            //db = request.result;
-
-            postMessage(JSON.stringify({
-                id: msg.id,
-                data: {
-                    msg: `database ${msg.data.name} created!`
-                }
-            }));
-        };
+        if (Notification.permission === 'granted') {
+            new Notification(`database ${dbName} created!`);
+        }
     }
     else if (msg.method === 'POST' && msg.url === `/databases/${dbName}/collections` && msg.data.name.length > 0) {
         console.log(`WW :: POST /databases/${dbName}/collections`, msg.data.name);
         collectionName = msg.data.name;
-        store = db.createObjectStore("books", {keyPath: "isbn"});
-        var titleIndex = store.createIndex("by_title", "title", {unique: true});
-        var authorIndex = store.createIndex("by_author", "author");
+        var collections = {};
+        collections[collectionName] = msg.data.fields.join(', ');
+        db.version(1).stores(collections);
+        db.open()
+            .then(() => {
+                postMessage(JSON.stringify({
+                    id: msg.id,
+                    data: {
+                        msg: `collection ${collectionName} created!`
+                    }
+                }));
 
-        store.transaction.oncomplete = function () {
-            postMessage(JSON.stringify({
-                id: msg.id,
-                data: {
-                    msg: `collection ${msg.data.name} created!`
+                if (Notification.permission === 'granted') {
+                    new Notification(`collection ${collectionName} created!`);
                 }
-            }));
-        };
+            });
     }
     else if (msg.method === 'POST' && msg.url === `/databases/${dbName}/collections/${collectionName}` && msg.data.title.length > 0) {
         console.log(`WW :: POST /databases/${dbName}/collections/${collectionName}`, msg.data);
-        var booksStore = db.transaction("books", "readwrite").objectStore("books");
-        booksStore.put(msg.data);
-        booksStore.transaction.oncomplete = function () {
+
+        db.transaction('rw', collectionName, () => {
+            db[collectionName].add(msg.data);
+
+            db[collectionName].where('title').equals(msg.data.title).each(function (document) {
+                console.log('WW ::', document);
+            });
+
+            console.log('WW :: replying to the MT');
+
             postMessage(JSON.stringify({
                 id: msg.id,
                 data: {
                     msg: `book ${msg.data.title} created!`
                 }
             }));
-        };
+
+            if (Notification.permission === 'granted') {
+                new Notification(`book ${msg.data.title} created!`);
+            }
+        });
     }
 };

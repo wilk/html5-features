@@ -1,0 +1,23 @@
+{
+  "name": "html5-features",
+  "version": "1.0.0",
+  "description": "html5 features testing repo",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wilk/html5-features.git"
+  },
+  "author": "Wilk <wilk3ert@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wilk/html5-features/issues"
+  },
+  "homepage": "https://github.com/wilk/html5-features#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-connect": "^3.1.0"
+  }
+}
